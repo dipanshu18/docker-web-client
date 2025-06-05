@@ -1,0 +1,190 @@
+{% extends "base.html" %} 
+
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="mb-5">
+      {% for category, message in messages %}
+        <li {% if category == "danger" %} class="p-5 rounded-md bg-red-500 font-bold text-white" {% else %} class="p-5 rounded-md bg-green-700 font-bold text-white" {% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-10 mb-5">
+  <div class="grid gap-5">
+    <h1 class="text-xl font-bold">Image actions</h1>
+    <div class="flex items-center gap-5">
+      <form
+        action="{{url_for('image_actions')}}"
+        method="post"
+        class="flex flex-col sm:flex-row sm:items-center w-full gap-5"
+      >
+        <input type="hidden" name="_method" value="POST" />
+        <input
+          class="input input-bordered w-full"
+          placeholder="image_name or image_name:tag"
+          id="name"
+          name="name"
+        />
+        <button class="btn" id="pull-image">Pull image</button>
+      </form>
+    </div>
+
+    <div class="flex items-center w-full gap-5">
+      <form
+        action="{{url_for('image_actions')}}"
+        method="POST"
+        class="flex flex-col sm:flex-row sm:items-center w-full gap-5"
+      >
+        <input type="hidden" name="_method" value="DELETE" />
+        <label for="name">Choose a image:</label>
+
+        <select name="name" class="w-full">
+          <option disabled selected>Select image</option>
+          {% for image in images %}
+          <option value="{{image.tag}}">{{image.tag}}</option>
+          {% endfor %}
+        </select>
+        <button class="btn" id="delete-image">Delete image</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid gap-5">
+    <h1 class="text-xl font-bold">Container actions</h1>
+
+    <div class="flex items-center w-full gap-5">
+      <form
+        action="{{url_for('container_actions', action='stop')}}"
+        method="POST"
+        class="flex flex-col sm:flex-row sm:items-center w-full gap-5"
+      >
+        <label for="name">Choose a container:</label>
+
+        <select name="name" id="name" class="w-full">
+          <option disabled selected>Select container</option>
+          {% for container in running_containers %}
+          <option value="{{container.name}}">{{container.name}}</option>
+          {% endfor %}
+        </select>
+        <button class="btn" id="stop-container">Stop container</button>
+      </form>
+    </div>
+    <div class="flex items-center w-full gap-5">
+      <form
+        action="{{url_for('container_actions', action='start')}}"
+        method="POST"
+        class="flex flex-col sm:flex-row sm:items-center w-full gap-5"
+      >
+        <label for="name">Choose a container:</label>
+
+        <select name="name" id="name" class="w-full">
+          <option disabled selected>Select container</option>
+          {% for container in all_containers if container.status != "running" %}
+          <option value="{{container.name}}">{{container.name}}</option>
+          {% endfor %}
+        </select>
+        <button class="btn" id="start-container">Start container</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div class="grid grid-cols-1 gap-5">
+  <div>
+    <p class="my-2 text-xl font-bold">All images</p>
+  <div class="h-[50vh] border border-neutral-200 rounded-md overflow-y-auto">
+    <div class="overflow-x-auto h-full">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Size (in mb)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for image in images %}
+          <tr>
+            <td>{{image.tag}}</td>
+            <td>{{image.size_mb}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+  <div>
+<p class="my-2 text-xl font-bold">All running containers</p>
+  <div class="h-[50vh] border border-neutral-200 rounded-md overflow-y-auto">
+    <div class="overflow-x-auto h-full">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Container ID</th>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Ports</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for container in running_containers %}
+          <tr>
+            <td>{{container.id}}</td>
+            <td>{{container.image}}</td>
+            <td>{{container.name}}</td>
+            <td>
+              {% for port, mappings in container.ports.items() %} {% for mapping
+              in mappings %}
+              <span>{{mapping.HostIp}} -> {{mapping.HostPort}}</span>
+              {% endfor %} {% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+  <div>
+    <p class="my-2 text-xl font-bold">All containers</p>
+  
+    <div class="h-[50vh] border border-neutral-200 rounded-md overflow-y-auto">
+      <div class="overflow-x-auto max-w-full h-full">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Container ID</th>
+            <th>Image</th>
+            <th>Container name</th>
+            <th>Ports</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for container in all_containers %}
+          <tr>
+            <td>{{container.id}}</td>
+            <td>{{container.image}}</td>
+            <td>{{container.name}}</td>
+            <td>
+              {% for port, mappings in container.ports.items() %} {% for mapping
+              in mappings %}
+              <span>{{mapping.HostIp}} -> {{mapping.HostPort}}</span>
+              {% endfor %} {% endfor %}
+            </td>
+            </td>
+            <td>{{container.status}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+</div>
+{% endblock %}
+

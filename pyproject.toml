@@ -1,0 +1,11 @@
+[project]
+name = "docker-web-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "docker>=7.1.0",
+    "flask>=3.1.1",
+    "uvicorn>=0.34.3",
+]
